@@ -1,0 +1,156 @@
+/**
+ * 
+ *
+ *
+ */
+
+ preferences {
+
+    input("deviceId", "text", title: "Device ID")
+
+    input("token", "text", title: "Access Token")
+
+}
+
+
+    metadata {
+	   definition (name: "Spark/Photon WS2812b", namespace: "", author: "Justin Wurth") 
+		{capability "Switch"
+	}
+}
+
+	// tile definitions
+	
+command "red"
+		
+command "green"
+		
+command "blue"
+		
+command "grey"
+		
+command "white"
+
+command "party"
+	
+
+tiles {
+		standardTile("switch", "device.switch", canChangeIcon: false) {
+			
+	state "off", label: '${name}', action: "switch.on", icon: "st.Lighting.light13", backgroundColor: "#ffffff"
+			
+	state "on", label: '${name}', action: "switch.off", icon: "st.Lighting.light13", backgroundColor: "#79b821", iconColor: "#ffffff"
+		
+}
+
+		
+
+standardTile("grey", "device.grey") {
+
+		state "grey", label: '${name}', action: "grey", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
+}
+       	
+standardTile("red", "device.red") {
+			
+	state "red", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ff0000"
+		
+}
+       	
+standardTile("green", "device.green") {
+			
+	state "green", label: '${name}', action: "green", icon: "st.Lighting.light13", backgroundColor: "#00ff00", iconColor: "#ffffff"
+		
+}
+       	
+standardTile("blue", "device.blue") {
+			
+	state "blue", label: '${name}', action: "blue", icon: "st.Lighting.light13", backgroundColor: "#0000ff", iconColor: "#ffffff"
+		
+}
+       	
+standardTile("white", "device.white") {
+			
+state "white", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+		
+}
+
+standardTile("party", "device.party") {
+			
+state "party", label: '${name}', action: "party", icon: "st.Lighting.light13", backgroundColor: "#d3ffd3", iconColor: "#ffffff"
+		
+}
+
+        
+        
+
+standardTile("color", "device.color") {
+        	
+state "white", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+        	
+state "red", label: '${name}', action: "green", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ffffff"
+        	
+state "green", label: '${name}', action: "blue", icon: "st.Lighting.light13", backgroundColor: "#00ff00", iconColor: "#ffffff"
+        	
+state "blue", label: '${name}', action: "grey", icon: "st.Lighting.light13", backgroundColor: "#0000ff", iconColor: "#ffffff"
+        	
+state "grey", label: '${name}', action: "party", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
+ 
+state "party", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+}
+main(["switch","color"])   
+details(["switch","color"])
+	
+}
+
+
+
+
+def parse(String description) {
+	log.error "This device does not support incoming events"
+	return null
+}
+def off(){
+	put '0'
+}
+
+def on() {
+	put '1'
+}
+
+def white() {
+	put '2'
+}
+
+def red() {
+	put '3'
+}
+
+def green() {
+	put '4'
+}
+
+def blue() {
+	put '5'
+}
+
+def grey() {
+	put '6'
+}
+
+def party() {
+	put '7'
+}
+
+private put(led) {
+
+    //Spark Core API Call
+
+    httpPost(
+
+        uri: "https://api.particle.io/v1/devices/${deviceId}/led",
+
+        body: [access_token: token, command: led],  
+
+    )
+
+}
