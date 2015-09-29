@@ -1,6 +1,7 @@
 /**
  * 
  *
+ 
  *
  */
 
@@ -31,7 +32,7 @@ command "grey"
 		
 command "white"
 
-command "party"
+command "dim"
 	
 
 tiles {
@@ -74,12 +75,10 @@ state "white", label: '${name}', action: "white", icon: "st.Lighting.light13", b
 		
 }
 
-standardTile("party", "device.party") {
+standardTile("dim", "device.dim") {
 			
-state "party", label: '${name}', action: "party", icon: "st.Lighting.light13", backgroundColor: "#d3ffd3", iconColor: "#ffffff"
-		
+state "dim", label: '${name}', action: "dim", icon: "st.Lighting.light13", backgroundColor: "#d3ffd3", iconColor: "#ffffff"
 }
-
         
         
 
@@ -93,9 +92,9 @@ state "green", label: '${name}', action: "blue", icon: "st.Lighting.light13", ba
         	
 state "blue", label: '${name}', action: "grey", icon: "st.Lighting.light13", backgroundColor: "#0000ff", iconColor: "#ffffff"
         	
-state "grey", label: '${name}', action: "party", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
+state "grey", label: '${name}', action: "dim", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
  
-state "party", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+state "dim", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
 }
 main(["switch","color"])   
 details(["switch","color"])
@@ -137,7 +136,8 @@ def grey() {
 	put '6'
 }
 
-def party() {
+
+def dim() {
 	put '7'
 }
 
