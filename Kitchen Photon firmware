@@ -1,0 +1,149 @@
+// This #include statement was automatically added by the Particle IDE.
+#include "neopixel.h"
+
+/*
+ * This is a minimal example, see extra-examples.cpp for a version
+ * with more explantory documentation, example routines, how to 
+ * hook up your pixels and all of the pixel types that are supported.
+ *
+ */
+
+#include "application.h"
+#include "neopixel.h"
+
+SYSTEM_MODE(AUTOMATIC);
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_PIN D2
+#define PIXEL_COUNT 47
+#define PIXEL_TYPE WS2812B
+#define brightness
+
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+
+
+void setup(){
+    
+    RGB.control(true);
+    RGB.color(0, 0, 0);
+    strip.begin();
+    strip.show();
+    Particle.function("led", led);
+   
+}
+
+void loop()
+{
+}
+
+
+int led(String command){
+    
+if(command == "0"){
+        colorWipe(strip.Color(0,0,0), 50);
+    }
+    
+    else if(command == "1"){
+        colorWipe(strip.Color(255, 120, 25), 50);
+    }
+    
+    else if(command == "2"){
+        colorWipe(strip.Color(180,90,10), 50);
+            
+        }  
+    else if(command == "3") {
+        colorWipe(strip.Color(255,0,0), 50);
+            
+        }  
+        
+    else if(command == "4"){
+        colorWipe(strip.Color(0,0,255), 50);
+    } 
+    else if(command == "5"){
+        CandyCane(120,4,120);//30 sets, 8 pixels wide, 50us delay
+    }
+} 
+  
+  
+// Set all pixels in the strip to a solid color, then wait (ms)
+void colorAll(uint32_t c, uint8_t wait) {
+  uint16_t i;
+  
+  for(i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+  }
+  strip.show();
+  delay(wait);
+}
+
+void colorWipe(uint32_t c, uint8_t wait) {
+    
+    
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
+
+void theaterChaseRainbow(uint8_t wait) {
+  for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
+    for (int q=0; q < 3; q++) {
+      for (int i=0; i < strip.numPixels(); i=i+3) {
+        strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+      }
+      strip.show();
+
+      delay(wait);
+
+      for (int i=0; i < strip.numPixels(); i=i+3) {
+        strip.setPixelColor(i+q, 0);        //turn every third pixel off
+      }
+    }
+  }
+}
+
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+
+void CandyCane  (int sets,int width,int wait) {
+  int L;
+  for(int j=0;j<(sets*width);j++) {
+    for(int i=0;i< strip.numPixels();i++) {
+      L=strip.numPixels()-i-1;
+      if ( ((i+j) % (width*2) )<width)
+        strip.setPixelColor(L,255,0,0);
+      else
+        strip.setPixelColor(L,0,255,0);
+    };
+    strip.show();
+    delay(wait);
+  };
+};
+
+
+void StaticCandyCane  (int width) {
+    int L;
+    for(int i=0;i< strip.numPixels();) {
+      L=strip.numPixels()-i-1;
+      if ( ((i) % (width*2) )<width)
+        strip.setPixelColor(L,255,0,0);
+      else
+        strip.setPixelColor(L,0,255,0);
+    };
+    strip.show();
+};
