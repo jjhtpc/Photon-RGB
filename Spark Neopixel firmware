@@ -1,20 +1,23 @@
+// This #include statement was automatically added by the Particle IDE.
+#include "neopixel.h"
+
 /*
- * This is a minimal example, see extra-examples.cpp for a version
- * with more explantory documentation, example routines, how to 
  * hook up your pixels and all of the pixel types that are supported.
  *
  */
 
 #include "application.h"
 #include "neopixel.h"
+#include "math.h"
 
 SYSTEM_MODE(AUTOMATIC);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2
-#define PIXEL_COUNT 23
+#define PIXEL_COUNT 88
 #define PIXEL_TYPE WS2812B
 #define brightness
+
 
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
@@ -23,9 +26,13 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 void setup(){
     
+    RGB.control(true);
+    RGB.color(0, 0, 0);
     strip.begin();
     strip.show();
     Particle.function("led", led);
+    Particle.variable("checkStatus1", "off");
+
    
 }
 
@@ -33,44 +40,50 @@ void loop()
 {
 }
 
+
 int led(String command){
-    
-    if(command == "0"){
+
+if(command == "0"){
         colorWipe(strip.Color(0,0,0), 50);
+         Particle.variable("checkStatus1", "off");
     }
     
     else if(command == "1"){
-        theaterChaseRainbow(5);
         colorWipe(strip.Color(255, 180, 40), 50);
+        Particle.variable("checkStatus1", "on");
     }
     
     else if(command == "2"){
-        colorWipe(strip.Color(255, 255, 255), 50);
-    }
-
-    else if(command == "3"){
         colorWipe(strip.Color(255,0,0), 50);
+        Particle.variable("checkStatus1", "on");
             
-        }  
-    else if(command == "4") {
-        colorWipe(strip.Color(0,128,0), 50);
-            
-        }  
-    else if(command == "5") {
-        colorWipe(strip.Color(0,0,255), 50);
-            
-        } 
-    else if(command == "6") {
-        colorWipe(strip.Color(75,30,128), 50);
-            
-        }
-    
-    else if(command == "7"){
+    }  
+    else if(command == "3") {
+        colorWipe(strip.Color(120,80,20), 50);
+        Particle.variable("checkStatus1", "on");
+    }  
+        
+    else if(command == "4"){
         colorWipe(strip.Color(30, 20, 5), 50);
         brightness(1);
-    }  
-}   
-  
+        Particle.variable("checkStatus1", "on");
+    }
+    
+    else {
+        String aux1 = getValue(command, ',', 0);
+        String aux2 = getValue(command, ',', 1);
+        String aux3 = getValue(command, ',', 2);
+    
+        int r = atoi(aux1.c_str());
+        int g = atoi(aux2.c_str());
+        int b = atoi(aux3.c_str()); 
+        colorAll(strip.Color(r,g,b), 50);
+        Particle.variable("checkStatus1", "on");
+     
+    }
+   
+   
+}
   
 // Set all pixels in the strip to a solid color, then wait (ms)
 void colorAll(uint32_t c, uint8_t wait) {
@@ -125,4 +138,49 @@ uint32_t Wheel(byte WheelPos) {
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
 
+void CandyCane  (int sets,int width,int wait) {
+  int L;
+  for(int j=0;j<(sets*width);j++) {
+    for(int i=0;i< strip.numPixels();i++) {
+      L=strip.numPixels()-i-1;
+      if ( ((i+j) % (width*2) )<width)
+        strip.setPixelColor(L,255,0,0);
+      else
+        strip.setPixelColor(L,0,255,0);
+    };
+    strip.show();
+    delay(wait);
+  }
+}
+
+
+void StaticCandyCane  (int width) {
+    int L;
+    for(int i=0;i< strip.numPixels();) {
+      L=strip.numPixels()-i-1;
+      if ( ((i) % (width*2) )<width)
+        strip.setPixelColor(L,255,0,0);
+      else
+        strip.setPixelColor(L,0,255,0);
+    };
+    strip.show();
+}    
+
+ 
+
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
+
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 
