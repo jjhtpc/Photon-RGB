@@ -16,27 +16,28 @@
 
     metadata {
 	   definition (name: "Spark/Photon WS2812b", namespace: "", author: "Justin Wurth") 
-		{capability "Switch"
+		{capability "Switch Level"
+		capability "Color Control"
+		capability "Color Temperature"
+		capability "Switch"
+        capability "Refresh"
+        capability "Polling"
+         attribute "colorName", "string"
+         
 	}
 }
 
 	// tile definitions
 	
 command "red"
-		
-command "green"
-		
-command "blue"
-		
-command "grey"
-		
-command "white"
 
-command "dim"
+command "moviedim"
+
+command "tvdim"
 	
 
 tiles {
-		standardTile("switch", "device.switch", canChangeIcon: false) {
+		standardTile("switch", "device.switch", width: 1, height: 1, canChangeIcon: false) {
 			
 	state "off", label: '${name}', action: "switch.on", icon: "st.Lighting.light13", backgroundColor: "#ffffff"
 			
@@ -44,60 +45,49 @@ tiles {
 		
 }
 
-		
+standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
+			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
+		}		
 
-standardTile("grey", "device.grey") {
-
-		state "grey", label: '${name}', action: "grey", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
-}
-       	
+     	
 standardTile("red", "device.red") {
 			
 	state "red", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ff0000"
 		
 }
-       	
-standardTile("green", "device.green") {
-			
-	state "green", label: '${name}', action: "green", icon: "st.Lighting.light13", backgroundColor: "#00ff00", iconColor: "#ffffff"
-		
-}
-       	
-standardTile("blue", "device.blue") {
-			
-	state "blue", label: '${name}', action: "blue", icon: "st.Lighting.light13", backgroundColor: "#0000ff", iconColor: "#ffffff"
-		
-}
-       	
-standardTile("white", "device.white") {
-			
-state "white", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
-		
+
+standardTile("tvdim", "device.tvdim") {
+
+		state "tvdim", label: '${name}', action: "tvdim", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
 }
 
-standardTile("dim", "device.dim") {
+standardTile("moviedim", "device.moviedim") {
 			
-state "dim", label: '${name}', action: "dim", icon: "st.Lighting.light13", backgroundColor: "#d3ffd3", iconColor: "#ffffff"
+state "moviedim", label: '${name}', action: "moviedim", icon: "st.Lighting.light13", backgroundColor: "#d3ffd3", iconColor: "#ffffff"
 }
-        
-        
+       
 
 standardTile("color", "device.color") {
         	
-state "white", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
-        	
-state "red", label: '${name}', action: "green", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ffffff"
-        	
-state "green", label: '${name}', action: "blue", icon: "st.Lighting.light13", backgroundColor: "#00ff00", iconColor: "#ffffff"
-        	
-state "blue", label: '${name}', action: "grey", icon: "st.Lighting.light13", backgroundColor: "#0000ff", iconColor: "#ffffff"
-        	
-state "grey", label: '${name}', action: "dim", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
+state "red", label: '${name}', action: "tvdim", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ffffff"
+       
+state "tvdim", label: '${name}', action: "moviedim", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
  
-state "dim", label: '${name}', action: "white", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+state "moviedim", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
 }
-main(["switch","color"])   
-details(["switch","color"])
+
+
+
+controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range:"(0..100)") {
+		state "level", action:"switch level.setLevel"
+	}
+
+controlTile("rgbSelector", "device.color", "color", height: 3, width: 3, inactiveLabel: false) {
+		     state "color", action:"setColor"
+                }
+                
+main(["switch"])   
+details(["switch","color", "refresh", "rgbSelector"])
 	
 }
 
@@ -105,41 +95,123 @@ details(["switch","color"])
 
 
 def parse(String description) {
-	log.error "This device does not support incoming events"
+	log.debug "This device does not support incoming events"
 	return null
 }
 def off(){
 	put '0'
+    sendEvent(name: "switch", value: "off" )
+    log.debug "switch is off"
 }
 
 def on() {
 	put '1'
-}
-
-def white() {
-	put '2'
+	sendEvent(name: "switch", value: "on" )
+    log.debug "switch is on"
 }
 
 def red() {
+	put '2'
+    sendEvent(name: "switch", value: "on" )
+}
+
+def tvdim() {
 	put '3'
+    sendEvent(name: "switch", value: "on" )
+    log.debug "this device is on tvdim"
 }
 
-def green() {
+
+def moviedim() {
 	put '4'
+    sendEvent(name: "switch", value: "on" )
+}
+def hsvToRgb(float hue, float saturation, float value) {
+    int h = (int)(hue * 6);
+    float f = hue * 6 - h;
+    float p = value * (1 - saturation);
+    float q = value * (1 - f * saturation);
+    float t = value * (1 - (1 - f) * saturation);
+
+    switch (h) {
+      case 0: return rgbToString(value, t, p);
+      case 1: return rgbToString(q, value, p);
+      case 2: return rgbToString(p, value, t);
+      case 3: return rgbToString(p, q, value);
+      case 4: return rgbToString(t, p, value);
+      case 5: return rgbToString(value, p, q);
+      default: return "000000";//throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
+    }
 }
 
-def blue() {
-	put '5'
+def hsvToShieldRgb(hue,saturation,value){
+    int h = (int)(hue * 6);
+    float f = hue * 6 - h;
+    float p = value * (1 - saturation);
+    float q = value * (1 - f * saturation);
+    float t = value * (1 - (1 - f) * saturation);
+
+    switch (h) {
+      case 0: return rgbToShieldRgb(value, t, p);
+      case 1: return rgbToShieldRgb(q, value, p);
+      case 2: return rgbToShieldRgb(p, value, t);
+      case 3: return rgbToShieldRgb(p, q, value);
+      case 4: return rgbToShieldRgb(t, p, value);
+      case 5: return rgbToShieldRgb(value, p, q);
+      default: return "0,0,0";//throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
+    }
 }
 
-def grey() {
-	put '6'
+def rgbToShieldRgb(r,g,b){
+//n/2 = r/255
+//n = (r/255) * 2
+	r = r;
+    //b = (b/255) * 2;
+    b = b
+    //g = (g/255) * 2;
+    g = g
+	//return "$r,$g,$b";
+    put '$r,$g,$b'
+    log.debug "Switch set to $r,$g,$b"
 }
 
-
-def dim() {
-	put '7'
+def rgbToString(float r, float g, float b) {
+    String rs = Integer.toHexString((int)(r * 256));
+    String gs = Integer.toHexString((int)(g * 256));
+    String bs = Integer.toHexString((int)(b * 256));
+    return rs + gs + bs;
 }
+
+def setColor(value) {
+	log.debug "setColor: ${value.hue} and setSaturation: ${value.saturation}"
+    //zigbee.smartShield(text: "debug: hue:${value.hue},${value.saturation}").format()
+    def rgb = rgbToShieldRgb(Math.round(value.red * 100)/100, Math.round(value.green * 100)/100, Math.round(value.blue * 100)/100);
+    //log.debug "setColor: $rgb"
+    //zigbee.smartShield(text:"debug:${value.red}").format();
+	
+}
+
+def poll() {
+	log.debug "Executing 'poll'"
+	 checkStatus ()	
+}
+
+def refresh() {
+	log.debug "executing 'refresh'"
+	checkStatus()
+
+}
+def checkStatus(){
+	
+	httpGet(uri: "https://api.particle.io/v1/devices/${deviceId}/checkStatus1?access_token=${token}",
+    	contentType: 'application/json',)
+    {resp ->           
+            log.debug "resp data: ${resp.data}"
+            log.debug "result: ${resp.data.result}"
+		sendEvent(name: "switch", value: "${resp.data.result}" )
+	}
+}
+
 
 private put(led) {
 
