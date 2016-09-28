@@ -171,7 +171,7 @@ def rgbToShieldRgb(r,g,b){
     //g = (g/255) * 2;
     g = g
 	//return "$r,$g,$b";
-    put '$r,$g,$b'
+    put "$r,$g,$b"
     log.debug "Switch set to $r,$g,$b"
 }
 
