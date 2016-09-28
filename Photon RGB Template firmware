@@ -85,13 +85,12 @@ if(command == "0"){
         int r = atoi(aux1.c_str());
         int g = atoi(aux2.c_str());
         int b = atoi(aux3.c_str()); 
-        int color = strip.Color(r,g,b);
-        colorWipe(color);
+        colorAll(strip.Color(r,g,b), 50);
         Particle.variable("checkStatus1", "on");
      
     }
    
-   
+
 }
   
 // Set all pixels in the strip to a solid color, then wait (ms)
