@@ -29,7 +29,7 @@
 
 	// tile definitions
 	
-command "red"
+command "alerts"
 
 command "moviedim"
 
@@ -50,9 +50,9 @@ standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat
 		}		
 
      	
-standardTile("red", "device.red") {
+standardTile("alerts", "device.alerts") {
 			
-	state "red", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ff0000"
+	state "alerts", label: '${name}', action: "alerts", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ff0000"
 		
 }
 
@@ -69,16 +69,16 @@ state "moviedim", label: '${name}', action: "moviedim", icon: "st.Lighting.light
 
 standardTile("color", "device.color") {
         	
-state "red", label: '${name}', action: "tvdim", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ffffff"
+state "alerts", label: '${name}', action: "tvdim", icon: "st.Lighting.light13", backgroundColor: "#ff0000", iconColor: "#ffffff"
        
 state "tvdim", label: '${name}', action: "moviedim", icon: "st.Lighting.light13", backgroundColor: "#d3d3d3", iconColor: "#ffffff"
  
-state "moviedim", label: '${name}', action: "red", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
+state "moviedim", label: '${name}', action: "alerts", icon: "st.Lighting.light13", backgroundColor: "#ffffff", iconColor: "#ffffff"
 }
 
 
 
-controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range:"(0..100)") {
+controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 3, inactiveLabel: false, range:"(0..100)") {
 		state "level", action:"switch level.setLevel"
 	}
 
@@ -87,7 +87,7 @@ controlTile("rgbSelector", "device.color", "color", height: 3, width: 3, inactiv
                 }
                 
 main(["switch"])   
-details(["switch","color", "refresh", "rgbSelector"])
+details(["switch","color", "refresh", "levelSliderControl", "rgbSelector"])
 	
 }
 
@@ -110,9 +110,10 @@ def on() {
     log.debug "switch is on"
 }
 
-def red() {
+def alerts() {
 	put '2'
     sendEvent(name: "switch", value: "on" )
+    log.debug "this device is on alert"
 }
 
 def tvdim() {
@@ -126,70 +127,27 @@ def moviedim() {
 	put '4'
     sendEvent(name: "switch", value: "on" )
 }
-def hsvToRgb(float hue, float saturation, float value) {
-    int h = (int)(hue * 6);
-    float f = hue * 6 - h;
-    float p = value * (1 - saturation);
-    float q = value * (1 - f * saturation);
-    float t = value * (1 - (1 - f) * saturation);
 
-    switch (h) {
-      case 0: return rgbToString(value, t, p);
-      case 1: return rgbToString(q, value, p);
-      case 2: return rgbToString(p, value, t);
-      case 3: return rgbToString(p, q, value);
-      case 4: return rgbToString(t, p, value);
-      case 5: return rgbToString(value, p, q);
-      default: return "000000";//throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
-    }
-}
-
-def hsvToShieldRgb(hue,saturation,value){
-    int h = (int)(hue * 6);
-    float f = hue * 6 - h;
-    float p = value * (1 - saturation);
-    float q = value * (1 - f * saturation);
-    float t = value * (1 - (1 - f) * saturation);
-
-    switch (h) {
-      case 0: return rgbToShieldRgb(value, t, p);
-      case 1: return rgbToShieldRgb(q, value, p);
-      case 2: return rgbToShieldRgb(p, value, t);
-      case 3: return rgbToShieldRgb(p, q, value);
-      case 4: return rgbToShieldRgb(t, p, value);
-      case 5: return rgbToShieldRgb(value, p, q);
-      default: return "0,0,0";//throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
-    }
+def setColor(value) {
+	log.debug "setColor: ${value.hue} and setSaturation: ${value.saturation}"
+    def rgb = rgbToShieldRgb(value.red, value.green, value.blue);
 }
 
 def rgbToShieldRgb(r,g,b){
-//n/2 = r/255
-//n = (r/255) * 2
-	r = r;
-    //b = (b/255) * 2;
+	r = r
     b = b
-    //g = (g/255) * 2;
     g = g
-	//return "$r,$g,$b";
     put "$r,$g,$b"
     log.debug "Switch set to $r,$g,$b"
 }
 
-def rgbToString(float r, float g, float b) {
-    String rs = Integer.toHexString((int)(r * 256));
-    String gs = Integer.toHexString((int)(g * 256));
-    String bs = Integer.toHexString((int)(b * 256));
-    return rs + gs + bs;
+def setLevel(value){
+	call "$value"
+    log.debug "$value"
+    
 }
 
-def setColor(value) {
-	log.debug "setColor: ${value.hue} and setSaturation: ${value.saturation}"
-    //zigbee.smartShield(text: "debug: hue:${value.hue},${value.saturation}").format()
-    def rgb = rgbToShieldRgb(Math.round(value.red * 100)/100, Math.round(value.green * 100)/100, Math.round(value.blue * 100)/100);
-    //log.debug "setColor: $rgb"
-    //zigbee.smartShield(text:"debug:${value.red}").format();
-	
-}
+
 
 def poll() {
 	log.debug "Executing 'poll'"
@@ -222,6 +180,20 @@ private put(led) {
         uri: "https://api.particle.io/v1/devices/${deviceId}/led",
 
         body: [access_token: token, command: led],  
+
+    )
+
+}
+
+private call(dim) {
+
+    //Spark Core API Call
+
+    httpPost(
+
+        uri: "https://api.particle.io/v1/devices/${deviceId}/dim",
+
+        body: [access_token: token, command: dim],  
 
     )
 
