@@ -20,6 +20,15 @@ SYSTEM_MODE(AUTOMATIC);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 
+int r = 0;
+int g = 0;
+int b = 0;
+int rmap = 0;
+int gmap = 0 ;
+int bmap = 0;
+
+
+
 
 
 void setup(){
@@ -29,7 +38,14 @@ void setup(){
     strip.begin();
     strip.show();
     Particle.function("led", led);
+    Particle.function("dim", dim);
     Particle.variable("checkStatus1", "off");
+    Particle.variable("r", &r);
+    Particle.variable("b", &g);
+    Particle.variable("g", &b);
+    Particle.variable("rmap", &rmap);
+    Particle.variable("gmap", &gmap);
+    Particle.variable("bmap", &bmap);
 
    
 }
@@ -42,17 +58,23 @@ void loop()
 int led(String command){
 
 if(command == "0"){
-        colorWipe(strip.Color(0,0,0), 50);
+        colorAll(strip.Color(0,0,0), 50);
         Particle.variable("checkStatus1", "off");
     }
     
     else if(command == "1"){
-        colorWipe(strip.Color(255, 180, 40), 50);
+        colorAll(strip.Color(255, 180, 40), 50);
+        rmap = 255;
+        gmap = 180;
+        bmap = 40;
         Particle.variable("checkStatus1", "on");
     }
     
     else if(command == "2"){
-        colorWipe(strip.Color(255,0,0), 50);
+        colorAll(strip.Color(255,0,0), 50);
+        rmap = 255;
+        gmap = 0;
+        bmap = 0;
         Particle.variable("checkStatus1", "on");
             
     }  
@@ -72,7 +94,7 @@ if(command == "0"){
         Particle.variable("checkStatus1", "on");
     }
     else if(command == "6"){
-        GoBears(50,11,40);//30 sets, 8 pixels wide, 50us delay
+        GoBears(50,8,40);//30 sets, 8 pixels wide, 50us delay
         colorWipe(strip.Color(120,80,20), 50);
         Particle.variable("checkStatus1", "on");
     }
@@ -86,12 +108,26 @@ if(command == "0"){
         int g = atoi(aux2.c_str());
         int b = atoi(aux3.c_str()); 
         colorAll(strip.Color(r,g,b), 50);
+        rmap = r;
+        gmap = g;
+        bmap = b;
+        
         Particle.variable("checkStatus1", "on");
      
     }
    
 
 }
+  
+  
+int dim(String command){
+    
+    int command1 = command.toInt();
+    r = map(command1,0,100,0,rmap);
+    g = map(command1,0,100,0,gmap);
+    b = map(command1,0,100,0,bmap);
+    colorAll(strip.Color(r,g,b), 50);
+}  
   
 // Set all pixels in the strip to a solid color, then wait (ms)
 void colorAll(uint32_t c, uint8_t wait) {
@@ -195,9 +231,9 @@ void GoBears  (int sets,int width,int wait) {
     for(int i=0;i< strip.numPixels();i++) {
       L=strip.numPixels()-i-1;
       if ( ((i+j) % (width*2) )<width)
-        strip.setPixelColor(L,0,0,102);
+        strip.setPixelColor(L,0,0,255);
       else
-        strip.setPixelColor(L,255,90,10);
+        strip.setPixelColor(L,255,0,0);
     };
     strip.show();
     delay(wait);
@@ -219,4 +255,3 @@ String getValue(String data, char separator, int index)
   }
   return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
-
